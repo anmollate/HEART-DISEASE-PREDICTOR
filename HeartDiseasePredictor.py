@@ -1,117 +1,58 @@
-# %% [markdown]
-# # Heart Disease Predictor
-
-# %% [markdown]
-# * The Heart Disease Predictor Predicts The Possibilty Of The Heart Disease For A Person Based On Their Vitals Entered, The Model Makes It's Prediction Based On Heart Disease Dataset On Which It Is Trained
-
-# %%
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
-
-df=pd.read_csv("heart.csv")
-
-# %% [markdown]
-# * Understanding The Dataset
-
-# %%
-df.info()
-df.describe()
-
-# %% [markdown]
-# * Knowing How Many Different Values Does Each Categorical Column Have
-
-# %%
-print(df["Sex"].unique())
-print(df["ChestPainType"].unique())
-print(df["RestingECG"].unique())
-print(df["ExerciseAngina"].unique())
-print(df["ST_Slope"].unique())
-
-# %% [markdown]
-# * Dropping Null Rows If Any
-
-# %%
-df=df[["Age","Sex","ChestPainType","RestingBP","Cholesterol","FastingBS","RestingECG","MaxHR","ExerciseAngina","Oldpeak","ST_Slope","HeartDisease"]].dropna()
-
-# %% [markdown]
-# * Encoding The Categorical Values:
-
-# %%
-df["Sex"]=df["Sex"].map({"M":0,"F":1})
-df["ChestPainType"]=df["ChestPainType"].map({"ATA":0,"NAP":1,"ASY":2,"TA":3})
-df["RestingECG"]=df["RestingECG"].map({"Normal":0,"ST":1,"LVH":2})
-df["ExerciseAngina"]=df["ExerciseAngina"].map({"N":0,"Y":1})
-df["ST_Slope"]=df["ST_Slope"].map({"Up":0,"Flat":1,"Down":2})
-
-# %% [markdown]
-# * Dividing Dataset Into Data And Its Result
-
-# %%
-#Data
-x=df[["Age","Sex","ChestPainType","RestingBP","Cholesterol","FastingBS","RestingECG","MaxHR","ExerciseAngina","Oldpeak","ST_Slope"]]
-
-#Result
-y=df["HeartDisease"]
-
-# %%
-model=DecisionTreeClassifier()
-model.fit(x,y)
-
-print(".....Heart Disease Predictor.....")
-age=int(input("Enter Your Age: "))
-sex=input("Enter Your Sex: ")
-CPT=input("Describe Your Chest Pain Type ATA/NAP/ASY/TA: ")
-RBP=int(input("Enter Your Resting Blood Pressure: "))
-CHL=int(input("Enter Your Cholestrol Level: "))
-FBS=int(input("Enter Your Fasting Blood Sugar: "))
-RECG=input("Enter Your Resting ECG Normal/ST/LVH: ")
-MHR=int(input("Enter Your Maximum Heart Rate: "))
-EA=input("Does Your Chest Pains While Exercising Yes/No: ")
-OP=float(input("Enter Your Old Peak: "))
-SS=input("Enter Your ST Slope Up/Flat/Down: ")
-
-# Encoding Categorical Values
-sex=0 if sex=="male" else 1
-
-if CPT=="ATA":
-    CPT=0
-elif CPT=="NAP":
-    CPT=1
-elif CPT=="ASY":
-    CPT=2
-else:
-    CPT=3
-
-if RECG=="Normal":
-    RECG=0
-elif RECG=="ST":
-    RECG=1
-else:
-    RECG=2
-
-if EA=="Yes":
-    EA=1
-else:
-    EA=0
-
-if SS=="Up":
-    SS=0
-elif SS=="Flat":
-    SS=1
-else:
-    SS=2
-
-UserData=pd.DataFrame([[age,sex,CPT,RBP,CHL,FBS,RECG,MHR,EA,OP,SS]],columns=[["Age","Sex","ChestPainType","RestingBP","Cholesterol","FastingBS","RestingECG","MaxHR","ExerciseAngina","Oldpeak","ST_Slope"]])
-
-prediction=model.predict(UserData)
-
-if prediction==0:
-    print("You Don't Have Any Heart Disease.")
-else:
-    print("You Have A Heart Disease!!")
+import streamlit as st
 
 
-# %%
+st.title("🫀 Heart Disease Predictor 🩺")
+st.subheader("Enter Your Vitals And Check Your Heart Health Instantly!")
+
+df = pd.read_csv("heart.csv")
 
 
+df = df[["Age", "Sex", "ChestPainType", "RestingBP", "Cholesterol",
+         "FastingBS", "RestingECG", "MaxHR", "ExerciseAngina",
+         "Oldpeak", "ST_Slope", "HeartDisease"]].dropna().copy()
 
+df["Sex"] = df["Sex"].map({"M": 0, "F": 1})
+df["ChestPainType"] = df["ChestPainType"].map({"ATA": 0, "NAP": 1, "ASY": 2, "TA": 3})
+df["RestingECG"] = df["RestingECG"].map({"Normal": 0, "ST": 1, "LVH": 2})
+df["ExerciseAngina"] = df["ExerciseAngina"].map({"N": 0, "Y": 1})
+df["ST_Slope"] = df["ST_Slope"].map({"Up": 0, "Flat": 1, "Down": 2})
+
+x = df.drop("HeartDisease", axis=1)
+y = df["HeartDisease"]
+
+model = DecisionTreeClassifier()
+model.fit(x, y)
+
+st.header("📝 Patient Information")
+
+age = st.number_input("Enter Your Age:", min_value=0, max_value=120)
+sex = st.selectbox("Select Your Sex:", ["Male", "Female"])
+CPT = st.selectbox("Chest Pain Type:", ["ATA", "NAP", "ASY", "TA"])
+RBP = st.number_input("Resting Blood Pressure (mm Hg):", min_value=0)
+CHL = st.number_input("Cholesterol Level (mg/dL):", min_value=0)
+FBS = st.number_input("Fasting Blood Sugar (1 if > 120 mg/dL else 0):", min_value=0, max_value=1)
+RECG = st.selectbox("Resting ECG Results:", ["Normal", "ST", "LVH"])
+MHR = st.number_input("Maximum Heart Rate Achieved:", min_value=0)
+EA = st.selectbox("Chest Pain While Exercising:", ["No", "Yes"])
+OP = st.number_input("Old Peak (ST Depression):", step=0.01)
+SS = st.selectbox("ST Slope:", ["Up", "Flat", "Down"])
+
+sex = 0 if sex == "Male" else 1
+CPT = {"ATA": 0, "NAP": 1, "ASY": 2, "TA": 3}[CPT]
+RECG = {"Normal": 0, "ST": 1, "LVH": 2}[RECG]
+EA = 1 if EA == "Yes" else 0
+SS = {"Up": 0, "Flat": 1, "Down": 2}[SS]
+
+UserData = pd.DataFrame([[age, sex, CPT, RBP, CHL, FBS, RECG, MHR, EA, OP, SS]],
+                        columns=["Age", "Sex", "ChestPainType", "RestingBP", "Cholesterol",
+                                 "FastingBS", "RestingECG", "MaxHR", "ExerciseAngina", "Oldpeak", "ST_Slope"])
+
+if st.button("🩺 Predict"):
+    prediction = model.predict(UserData)
+    
+    if prediction[0] == 0:
+        st.success("🎉 You are not likely to have heart disease.")
+    else:
+        st.error("⚠️ Risk of heart disease detected. Please consult a healthcare professional.")
