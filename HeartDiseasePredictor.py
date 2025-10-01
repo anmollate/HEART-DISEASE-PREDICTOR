@@ -9,11 +9,10 @@ st.subheader("Enter Your Vitals And Check Your Heart Health Instantly!")
 df = pd.read_csv("heart.csv")
 
 
-df = df[["Age", "Sex", "ChestPainType", "RestingBP", "Cholesterol",
+df = df[["Age", "ChestPainType", "RestingBP", "Cholesterol",
          "FastingBS", "RestingECG", "MaxHR", "ExerciseAngina",
          "Oldpeak", "ST_Slope", "HeartDisease"]].dropna().copy()
 
-df["Sex"] = df["Sex"].map({"M": 0, "F": 1})
 df["ChestPainType"] = df["ChestPainType"].map({"ATA": 0, "NAP": 1, "ASY": 2, "TA": 3})
 df["RestingECG"] = df["RestingECG"].map({"Normal": 0, "ST": 1, "LVH": 2})
 df["ExerciseAngina"] = df["ExerciseAngina"].map({"N": 0, "Y": 1})
@@ -28,7 +27,6 @@ model.fit(x, y)
 st.header("📝 Patient Information")
 
 age = st.number_input("Enter Your Age:", min_value=0, max_value=120)
-sex = st.selectbox("Select Your Sex:", ["Male", "Female"])
 CPT = st.selectbox("Chest Pain Type:", ["ATA", "NAP", "ASY", "TA"])
 RBP = st.number_input("Resting Blood Pressure (mm Hg):", min_value=0)
 CHL = st.number_input("Cholesterol Level (mg/dL):", min_value=0)
@@ -39,14 +37,13 @@ EA = st.selectbox("Chest Pain While Exercising:", ["No", "Yes"])
 OP = st.number_input("Old Peak (ST Depression):", step=0.01)
 SS = st.selectbox("ST Slope:", ["Up", "Flat", "Down"])
 
-sex = 0 if sex == "Male" else 1
 CPT = {"ATA": 0, "NAP": 1, "ASY": 2, "TA": 3}[CPT]
 RECG = {"Normal": 0, "ST": 1, "LVH": 2}[RECG]
 EA = 1 if EA == "Yes" else 0
 SS = {"Up": 0, "Flat": 1, "Down": 2}[SS]
 
-UserData = pd.DataFrame([[age, sex, CPT, RBP, CHL, FBS, RECG, MHR, EA, OP, SS]],
-                        columns=["Age", "Sex", "ChestPainType", "RestingBP", "Cholesterol",
+UserData = pd.DataFrame([[age, CPT, RBP, CHL, FBS, RECG, MHR, EA, OP, SS]],
+                        columns=["Age", "ChestPainType", "RestingBP", "Cholesterol",
                                  "FastingBS", "RestingECG", "MaxHR", "ExerciseAngina", "Oldpeak", "ST_Slope"])
 
 if st.button("🩺 Predict"):
